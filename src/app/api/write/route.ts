@@ -19,7 +19,7 @@ export async function POST(req: Request) {
         requestSchema.parse(await req.json());
     } catch (error) {
         return Response.json(
-            { error: 'Invalid request body' },
+            { error: 'Invalid request body: ' + error },
             { status: 400 }
         );
     }
