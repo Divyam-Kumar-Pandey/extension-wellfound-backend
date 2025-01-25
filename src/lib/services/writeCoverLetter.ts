@@ -1,33 +1,43 @@
-import {OpenAI} from "openai";
+const {
+  GoogleGenerativeAI,
+} = require("@google/generative-ai");
 
-const apiKey = process.env.API_KEY;
-const baseURL = process.env.BASE_URL;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-async function writeCoverLetter(aboutTheJob: string, question: string) {
-  const api = new OpenAI({
-    apiKey,
-    baseURL
-  });
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash-8b",
+});
 
-  const completion = await api.chat.completions.create({
-    model: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a professional cover letter writer. You will help me write a cover letter for a job application. You will answer the given question based on the job description. Here is the job description: " +
-          aboutTheJob
-      },
-      {
-        role: "user",
-        content: question
-      }
-    ],
-    temperature: Number(process.env.TEMPERATURE),
-    max_tokens: Number(process.env.MAX_TOKENS)
-  });
-    
-  return completion.choices[0].message.content;
+const generationConfig = {
+  temperature: 0.7,
+  topP: 0.95,
+  topK: 40,
+  maxOutputTokens: 1000,
+  responseMimeType: "text/plain",
+};
+
+export default async function writeCoverLetter(aboutTheJob: string, question: string) {
+  const systemPrompt = `You are a professional cover letter writer. Write a response to the following job application question based on the job description provided. Write a final human-like simple english response in without any blanks, like [Previous Company Name] or [Previous Job Title].`;
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig,
+      history: [
+        {
+          role: "user",
+          parts: [{text: systemPrompt}]
+        },
+        {
+          role: "user",
+          parts: [{text: `Job Description: ${aboutTheJob}`}]
+        }
+      ],
+    });
+
+    const result = await chatSession.sendMessage(question);
+    return result.response.text();
+  } catch (error) {
+    console.error("Error in writeCoverLetter:", error);
+    throw new Error(`Failed to generate cover letter: ${error}`);
+  }
 }
-
-export default writeCoverLetter;
