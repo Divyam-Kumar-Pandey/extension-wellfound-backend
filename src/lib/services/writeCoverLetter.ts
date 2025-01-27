@@ -21,7 +21,7 @@ const generationConfig = {
 };
 
 export default async function writeCoverLetter(aboutTheJob: string, question: string) {
-  const systemPrompt = `You are a professional cover letter writer. Write a response to the following job application question based on the job description provided. Write a final human-like simple english response in without any blanks, like [Previous Company Name] or [Previous Job Title].`;
+  const systemPrompt = `You are a professional cover letter writer. Write a response to the following job application question based on the job description provided. Write a final human-like simple english response in without any blanks, like [Previous Company Name] or [Previous Job Title]. If you given to write a cover letter, starting with Dear Hiring Manager. If you are given to write a response to a question, write a final human-like simple english response in without any blanks, within 150 words.`;
 
   try {
     const chatSession = model.startChat({
